@@ -1,7 +1,12 @@
+import CharactersList from '../components/CharactersList'
+
 export default function Home() {
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold">Personagens dos filmes de Star Wars</h1>
-    </div>
-  );
+    <main>
+      <h1 className="font-bold">Personagens dos filmes de Star Wars</h1>
+      <div>
+        <CharactersList />
+      </div>
+    </main>
+  )
 }

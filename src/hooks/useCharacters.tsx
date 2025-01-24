@@ -5,13 +5,13 @@ import { Character } from '../types/character'
 export function useCharacters() {
   const charactersApi = 'https://swapi.dev/api/people/'
   const [characters, setCharacters] = useState<Character[]>([])
-  const [page, setPage] = useState(1)
-  const [loading, setLoading] = useState(false)
+  const [currentPage, setPage] = useState(1)
+  const [isLoading, setLoading] = useState(false)
   const [hasNextPage, setHasNextPage] = useState(true)
 
-  const fetchFilmTitle = async (filmsApi: string) => {
+  const fetchFilmTitle = async (filmApi: string) => {
     try {
-      const resp = await fetch(filmsApi)
+      const resp = await fetch(filmApi)
       const data = await resp.json()
       return data.title
     } catch (error) {
@@ -24,12 +24,12 @@ export function useCharacters() {
     try {
       setLoading(true)
 
-      const resp = await fetch(`${charactersApi}?page=${page}`)
+      const resp = await fetch(`${charactersApi}?page=${currentPage}`)
       const data = await resp.json()
-      const characters = await Promise.all(
+      const fetchedCharacters = await Promise.all(
         data.results.map(async (character: Character) => {
           const filmTitles = await Promise.all(
-            character.films.map(filmUrl => fetchFilmTitle(filmUrl))
+            character.films.map(filmApi => fetchFilmTitle(filmApi))
           )
           return { 
             ...character, filmTitles: filmTitles.join(', ')
@@ -37,7 +37,8 @@ export function useCharacters() {
         })
       )
 
-      setCharacters(page => [...page, ...characters])
+      setCharacters(prevCharacters => [...prevCharacters, ...fetchedCharacters])
+      
       setHasNextPage(data.next !== null)
     } catch (error) {
       console.error('Erro ao buscar personagens: ', error)
@@ -48,11 +49,11 @@ export function useCharacters() {
 
   useEffect(() => {
     fetchCharacters()
-  }, [page])
+  }, [currentPage])
 
   const loadMore = () => {
     setPage(page => page + 1)
   }
 
-  return { characters, loading, hasNextPage, loadMore }
+  return { characters, isLoading, hasNextPage, loadMore }
 }
